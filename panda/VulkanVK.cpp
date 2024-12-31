@@ -1,24 +1,36 @@
 #include "VulkanVK.h"
 
-void core::graphic::vulkan::VulkanVK::drawFrame() const {
+void core::graphic::vulkan::VulkanVK::drawFrame() {
     const VkSwapchainKHR swapchain = this->m_swapchainVK.getSwapchain();
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(this->m_deviceVK.getDevice(), this->m_swapchainVK.getSwapchain(),
-                          std::numeric_limits<uint64_t>::max(), this->m_semaphoreVK.getSemaphores()[0], VK_NULL_HANDLE,
-                          &imageIndex);
+
+    //vkDeviceWaitIdle(this->m_deviceVK.getDevice());
+    vkQueueWaitIdle(this->m_deviceVK.getQueue());
+
+    const VkSemaphore* imageAvailableSemaphore = this->m_semaphoreVK.getSemaphore(0);
+    const VkSemaphore* renderFinishedSemaphore = this->m_semaphoreVK.getSemaphore(1);
+
+    // Acquire the next image
+    CATCH(vkAcquireNextImageKHR(
+        this->m_deviceVK.getDevice(),
+        this->m_swapchainVK.getSwapchain(),
+        std::numeric_limits<uint64_t>::max(),
+        *imageAvailableSemaphore,
+        VK_NULL_HANDLE,
+        &imageIndex));
 
     VkSubmitInfo submitInfo;
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.pNext = nullptr;
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &this->m_semaphoreVK.getSemaphores()[0];
-    VkPipelineStageFlags waitStageMask[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.pWaitSemaphores = imageAvailableSemaphore;
+    constexpr VkPipelineStageFlags waitStageMask[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.pWaitDstStageMask = waitStageMask;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &(this->m_commandBufferVK.getCommandBuffer()[imageIndex]);
+    submitInfo.pCommandBuffers = &this->m_commandBufferVK.getCommandBuffer()[imageIndex];
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &(this->m_semaphoreVK.getSemaphores()[1]);
+    submitInfo.pSignalSemaphores = renderFinishedSemaphore;
 
     CATCH(vkQueueSubmit(this->m_deviceVK.getQueue(), 1, &submitInfo, VK_NULL_HANDLE));
 
@@ -26,7 +38,7 @@ void core::graphic::vulkan::VulkanVK::drawFrame() const {
     presentInfoKHR.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfoKHR.pNext = nullptr;
     presentInfoKHR.waitSemaphoreCount = 1;
-    presentInfoKHR.pWaitSemaphores = &(this->m_semaphoreVK.getSemaphores()[1]);
+    presentInfoKHR.pWaitSemaphores = renderFinishedSemaphore;
     presentInfoKHR.swapchainCount = 1;
     presentInfoKHR.pSwapchains = &swapchain;
     presentInfoKHR.pImageIndices = &imageIndex;

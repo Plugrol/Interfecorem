@@ -43,9 +43,9 @@ namespace core::graphic::vulkan {
         }
     }
 
-    VkSemaphore* SemaphoreVK::getSemaphores() const
+    VkSemaphore* SemaphoreVK::getSemaphore(const uint32_t index) const
     {
-        return m_semaphore;
+        return &m_semaphore[index];
     }
 
 }
