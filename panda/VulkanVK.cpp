@@ -1,11 +1,10 @@
 #include "VulkanVK.h"
 
-void core::graphic::vulkan::VulkanVK::drawFrame() {
+void core::graphic::vulkan::VulkanVK::drawFrame() const {
     const VkSwapchainKHR swapchain = this->m_swapchainVK.getSwapchain();
 
     uint32_t imageIndex;
 
-    //vkDeviceWaitIdle(this->m_deviceVK.getDevice());
     vkQueueWaitIdle(this->m_deviceVK.getQueue());
 
     const VkSemaphore* imageAvailableSemaphore = this->m_semaphoreVK.getSemaphore(0);
@@ -94,14 +93,14 @@ void core::graphic::vulkan::VulkanVK::destroy() {
 
 void core::graphic::vulkan::VulkanVK::resize(GLFWwindow *window, int width, int height, const bool &pipeline) {
 
-    const VkSurfaceCapabilitiesKHR surfaceCapabilites = this->m_deviceVK.getPhysicalDevice().r_surfaceCapabilitiesKHR(
+    const VkSurfaceCapabilitiesKHR surface_capabilites = this->m_deviceVK.getPhysicalDevice().r_surfaceCapabilitiesKHR(
         this->m_windowVK.getSurface());
-    if (width > surfaceCapabilites.maxImageExtent.width) {
-        width = surfaceCapabilites.maxImageExtent.width;
+    if (width > surface_capabilites.maxImageExtent.width) {
+        width = surface_capabilites.maxImageExtent.width;
     }
 
-    if (height > surfaceCapabilites.maxImageExtent.height) {
-        height = surfaceCapabilites.maxImageExtent.height;
+    if (height > surface_capabilites.maxImageExtent.height) {
+        height = surface_capabilites.maxImageExtent.height;
     }
 
     if (width < 400) {

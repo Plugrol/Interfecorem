@@ -10,7 +10,7 @@ core::graphic::vulkan::SwapchainVK::SwapchainVK(const VkSwapchainKHR oldSwapchai
 void core::graphic::vulkan::SwapchainVK::init(const GameInfo &gameInfo, const DeviceVK &device,
                                               const VkSurfaceKHR &surface) {
     this->m_format = s_swapchainFormat(device.getPhysicalDevice(), surface);
-    VkPresentModeKHR presentMode = s_presentMode(device.getPhysicalDevice(), surface);
+    const VkPresentModeKHR presentMode = s_presentMode(device.getPhysicalDevice(), surface);
 
     if (!device.getPhysicalDevice().r_physicalDeviceSupportSwapchain(surface)) {
         std::cerr << "Surface is not supported";
@@ -68,24 +68,23 @@ core::graphic::vulkan::VulkanSwapchainFormat core::graphic::vulkan::SwapchainVK:
 
 VkPresentModeKHR core::graphic::vulkan::SwapchainVK::s_presentMode(const PhysicalDeviceVK gpu, const VkSurfaceKHR &surface) {
     const std::vector<VkPresentModeKHR> availableModes = gpu.r_supportedPresentModes(surface);
-    std::stack<VkPresentModeKHR> preferredModes;
-    preferredModes.push(VK_PRESENT_MODE_IMMEDIATE_KHR);
-    preferredModes.push(VK_PRESENT_MODE_FIFO_RELAXED_KHR);
-    preferredModes.push(VK_PRESENT_MODE_FIFO_KHR);
-    preferredModes.push(VK_PRESENT_MODE_MAILBOX_KHR);
 
-    while (!preferredModes.empty()) {
-        VkPresentModeKHR mode{preferredModes.top()};
+    std::vector preferredModes = {
+        VK_PRESENT_MODE_MAILBOX_KHR,
+        VK_PRESENT_MODE_FIFO_KHR,
+        VK_PRESENT_MODE_FIFO_RELAXED_KHR,
+        VK_PRESENT_MODE_IMMEDIATE_KHR
+    };
 
+    for (const auto& preferredMode : preferredModes) {
         for (const auto& availableMode : availableModes) {
-            if (availableMode == mode) {
-                return mode;
+            if (preferredMode == availableMode) {
+                return preferredMode;
             }
         }
-
-
-        preferredModes.pop();
     }
+
+    return availableModes[0];
 }
 
 uint32_t core::graphic::vulkan::SwapchainVK::s_imageCount(PhysicalDeviceVK gpu, const VkSurfaceKHR &surface) {

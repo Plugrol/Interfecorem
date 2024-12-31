@@ -41,7 +41,7 @@ namespace core::graphic::vulkan {
 		/**
 		* Draw a single frame and give its instructions.
 		*/
-		void drawFrame();
+		void drawFrame() const;
 
 		/**
 		* Recreate the swapchain and justify the content when the window is resized.

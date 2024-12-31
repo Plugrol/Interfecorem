@@ -31,7 +31,7 @@ namespace core::graphic::vulkan {
 		* @param surface the surface to get additional info about the device.
 		* @return VkPresentModeKHR The best present mode.
 		*/
-		VkPresentModeKHR s_presentMode(PhysicalDeviceVK gpu, const VkSurfaceKHR &surface);
+		static VkPresentModeKHR s_presentMode(PhysicalDeviceVK gpu, const VkSurfaceKHR &surface);
 
 		/**
 		* Get the image count, that is supported. 3 is most wanted here.
